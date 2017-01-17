@@ -1,0 +1,38 @@
+{
+  "project_info": {
+    "project_number": "396778917729",
+    "firebase_url": "https://find-my-car-3a2d4.firebaseio.com",
+    "project_id": "find-my-car-3a2d4",
+    "storage_bucket": "find-my-car-3a2d4.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:396778917729:android:5942db4a3a0f0ea8",
+        "android_client_info": {
+          "package_name": "uk.co.ribot.androidboilerplate"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "396778917729-usj8mk540ro3rjecaqsmtkd5bniu7pu5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
