@@ -52,7 +52,7 @@ public class MainActivity extends BaseActivity implements
 
     private static final String TAG = MainActivity.class.getSimpleName();
     // Google Map
-    private GoogleMap googleMap;
+    private GoogleMap mGoogleMap;
     private CameraPosition mCameraPosition;
     private static final int DEFAULT_ZOOM = 19;
     private final LatLng mDefaultLocation = new LatLng(37.369082, -122.038246);
@@ -61,26 +61,26 @@ public class MainActivity extends BaseActivity implements
 
     // Keys for storing activity state.
     private static final String KEY_MAP = "map_";
-    private static final String KEY_PARK = "park";
+    private static final String KEY_PARK = "mPark";
 
     // Keys for storing activity state.
     private static final String KEY_CAMERA_POSITION = "camera_position";
     private static final String KEY_LOCATION        = "location";
 
-    private Bundle savedInstanceState;
+    private Bundle mSavedInstanceState;
 
-    private int park = 0; // 0. Park, 1. Find my car, 2. Start over
+    private int mPark = 0; // 0. Park, 1. Find my car, 2. Start over
 
     @BindView(R.id.locationBtnMain)
     public Button locationBtn;
 
-    private ArrayList<LatLng> markerPoints;
+    private ArrayList<LatLng> mMarkerPoints;
 
     @Inject MainPresenter mMainPresenter;
 
-    private LocationManager locationManager;
-    private boolean isGPSEnabled     = false;
-    private boolean isNetworkEnabled = false;
+    private LocationManager mLocationManager;
+    private boolean mIsGPSEnabled = false;
+    private boolean mIsNetworkEnabled = false;
 
     /**
      * Retrieve saved location.
@@ -92,7 +92,7 @@ public class MainActivity extends BaseActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.savedInstanceState = savedInstanceState;
+        this.mSavedInstanceState = savedInstanceState;
         activityComponent().inject(this);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
@@ -104,8 +104,9 @@ public class MainActivity extends BaseActivity implements
             mCameraPosition  = savedInstanceState.getParcelable(KEY_CAMERA_POSITION);
         }
 
-        // Build the Play services client for use by the Fused LocationGPS Provider and the Places API.
-        locationManager = (LocationManager) this
+        // Build the Play services client for use by the Fused LocationGPS
+        // Provider and the Places API.
+        mLocationManager = (LocationManager) this
                 .getSystemService(LOCATION_SERVICE);
         initializeFragmentMap();
     }
@@ -115,15 +116,15 @@ public class MainActivity extends BaseActivity implements
      */
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        if (googleMap != null) {
-            outState.putParcelable(KEY_CAMERA_POSITION, googleMap.getCameraPosition());
+        if (mGoogleMap != null) {
+            outState.putParcelable(KEY_CAMERA_POSITION, mGoogleMap.getCameraPosition());
             outState.putParcelable(KEY_LOCATION, mCurrentLocation);
             int i = 1;
-            for (LatLng latlng : markerPoints) {
+            for (LatLng latlng : mMarkerPoints) {
                 outState.putParcelable(KEY_MAP + i, latlng);
                 i++;
             }
-            outState.putInt(KEY_PARK, park);
+            outState.putInt(KEY_PARK, mPark);
             super.onSaveInstanceState(outState);
         }
     }
@@ -133,7 +134,7 @@ public class MainActivity extends BaseActivity implements
      * */
     @Override
     public void initializeFragmentMap() {
-        if (googleMap == null) {
+        if (mGoogleMap == null) {
             // Cannot be injected with ButterKnife because SupportFragment is not a view
             SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                     .findFragmentById(R.id.map);
@@ -147,9 +148,9 @@ public class MainActivity extends BaseActivity implements
      */
     @Override
     public void updateUIInitLocation() {
-        if (googleMap != null) {
-            googleMap.setMyLocationEnabled(true);
-            googleMap.getUiSettings().setMyLocationButtonEnabled(true);
+        if (mGoogleMap != null) {
+            mGoogleMap.setMyLocationEnabled(true);
+            mGoogleMap.getUiSettings().setMyLocationButtonEnabled(true);
         }
     }
 
@@ -173,42 +174,42 @@ public class MainActivity extends BaseActivity implements
      */
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        this.googleMap = googleMap;
-        if (markerPoints == null) {
-            markerPoints = new ArrayList<LatLng>();
+        this.mGoogleMap = googleMap;
+        if (mMarkerPoints == null) {
+            mMarkerPoints = new ArrayList<LatLng>();
         }
         mMainPresenter.updateMapInterface(isNetworkAvailable(), isLocationEnabled());
         // Retrieve location and camera position from saved instance state.
-        if (this.savedInstanceState != null) {
-            markerPoints.clear();
-            park = savedInstanceState.getInt(KEY_PARK);
-            LatLng latLng1 = savedInstanceState.getParcelable(KEY_MAP + 1);
-            LatLng latLng2 = savedInstanceState.getParcelable(KEY_MAP + 2);
+        if (this.mSavedInstanceState != null) {
+            mMarkerPoints.clear();
+            mPark = mSavedInstanceState.getInt(KEY_PARK);
+            LatLng latLng1 = mSavedInstanceState.getParcelable(KEY_MAP + 1);
+            LatLng latLng2 = mSavedInstanceState.getParcelable(KEY_MAP + 2);
             mMainPresenter.addMarker(latLng1, 1);
 
             mMainPresenter.addMarker(latLng2, 2);
 
             mMainPresenter.getMvpView().changeBtnText();
             // Checks, whether start and end locations are captured
-            mMainPresenter.restorePath(this.markerPoints);
+            mMainPresenter.restorePath(this.mMarkerPoints);
 
-            if (activityMode == APP_MODE.UNIT_TEST_MODE) {
-                if (mCurrentLocation != null) {
-                    mCurrentLocation.setLatitude(mockDestinyCoordinates.latitude);
-                    mCurrentLocation.setLongitude(mockDestinyCoordinates.longitude);
-                }
+            if (activityMode == AppMode.UNIT_TEST_MODE && mCurrentLocation != null) {
+                mCurrentLocation.setLatitude(mockDestinyCoordinates.latitude);
+                mCurrentLocation.setLongitude(mockDestinyCoordinates.longitude);
             }
 
             mMainPresenter.cameraLogic((mCameraPosition != null), mCurrentLocation);
         }
         try {
-
-            this.googleMap.setOnMyLocationChangeListener(new GoogleMap.OnMyLocationChangeListener() {
-                @Override
-                public void onMyLocationChange(Location location) {
-                    mCurrentLocation = location;
-                }
-            });
+            this.mGoogleMap.
+                    setOnMyLocationChangeListener(
+                            new GoogleMap.
+                                    OnMyLocationChangeListener() {
+                    @Override
+                    public void onMyLocationChange(Location location) {
+                        mCurrentLocation = location;
+                    }
+                });
         } catch (Exception e) {
             Log.e(TAG, getString(R.string.exception_on_map_ready), e);
         }
@@ -254,20 +255,24 @@ public class MainActivity extends BaseActivity implements
         alertDialog.setMessage(R.string.location_message);
 
         // On pressing Settings button
-        alertDialog.setPositiveButton(R.string.button_settings, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog,int which) {
-                dialog.dismiss();
-                Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                startActivity(intent);
-            }
-        });
+        alertDialog.setPositiveButton(
+                R.string.button_settings,
+                    new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                    Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                    startActivity(intent);
+                }
+            });
 
         // on pressing cancel button
-        alertDialog.setNegativeButton(R.string.button_cancel, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
-            }
-        });
+        alertDialog.setNegativeButton(
+                R.string.button_cancel,
+                new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.cancel();
+                }
+            });
 
         // Showing Alert Message
         alertDialog.show();
@@ -288,20 +293,24 @@ public class MainActivity extends BaseActivity implements
         alertDialog.setMessage(R.string.network_message);
 
         // On pressing Settings button
-        alertDialog.setPositiveButton(R.string.button_settings, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog,int which) {
-                dialog.dismiss();
-                Intent intent = new Intent(Settings.ACTION_DATA_ROAMING_SETTINGS);
-                startActivity(intent);
-            }
-        });
+        alertDialog.setPositiveButton(
+                R.string.button_settings,
+                new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                    Intent intent = new Intent(Settings.ACTION_DATA_ROAMING_SETTINGS);
+                    startActivity(intent);
+                }
+            });
 
         // on pressing cancel button
-        alertDialog.setNegativeButton(R.string.button_cancel, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
-            }
-        });
+        alertDialog.setNegativeButton(
+                R.string.button_cancel,
+                new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.cancel();
+                }
+            });
 
         // Showing Alert Message
         alertDialog.show();
@@ -314,25 +323,27 @@ public class MainActivity extends BaseActivity implements
     }
 
     /**
-     * Gets the current location and asks the presenter to tell him where to place the camera and to add a marker
+     * Gets the current location and asks the presenter to
+     * tell him where to place the camera and to add a marker
      */
     @Override
     public void parkCar() {
-        if (googleMap == null) {
+        if (mGoogleMap == null) {
             return;
         }
 
         LatLng mLocation = null;
 
-        if (activityMode == APP_MODE.APPLICATION_MODE) {
+        if (activityMode == AppMode.APPLICATION_MODE) {
             try {
-                mCurrentLocation = googleMap.getMyLocation();
-                mLocation = new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude());
+                mCurrentLocation = mGoogleMap.getMyLocation();
+                mLocation = new LatLng(
+                        mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude());
             } catch (Exception e) {
                 mLocation = mDefaultLocation;
             }
         } else {
-            if (park == 0) {
+            if (mPark == 0) {
                 mLocation = mockOriginCoordinates;
             } else {
                 mLocation = mockDestinyCoordinates;
@@ -344,15 +355,14 @@ public class MainActivity extends BaseActivity implements
          * If the previous state was saved, set the position to the saved state.
          * If the current location is unknown, use a default position and zoom value.
          */
-        if (activityMode == APP_MODE.UNIT_TEST_MODE) {
-            if (mCurrentLocation != null) {
-                mCurrentLocation.setLatitude(mockDestinyCoordinates.latitude);
-                mCurrentLocation.setLongitude(mockDestinyCoordinates.longitude);
-            }
+        if (activityMode == AppMode.UNIT_TEST_MODE && mCurrentLocation != null) {
+            mCurrentLocation.setLatitude(mockDestinyCoordinates.latitude);
+            mCurrentLocation.setLongitude(mockDestinyCoordinates.longitude);
+
         }
         this.mMainPresenter.cameraLogic((mCameraPosition != null), mCurrentLocation);
 
-        this.mMainPresenter.addMarker(mLocation, park);
+        this.mMainPresenter.addMarker(mLocation, mPark);
     }
 
     /**
@@ -362,44 +372,46 @@ public class MainActivity extends BaseActivity implements
      */
     @Override
     public void addCurrentLocationMarker(LatLng latLng, int title) {
-        markerPoints.add(latLng);
+        mMarkerPoints.add(latLng);
         // getLocationRoute marker
         MarkerOptions marker = new MarkerOptions().
                 position(latLng).
                 title(getString(title));
         // adding marker
-        if (googleMap != null) {
-            googleMap.addMarker(marker);
+        if (mGoogleMap != null) {
+            mGoogleMap.addMarker(marker);
         }
     }
 
     /**
-     * Based on the current state it asks the presenter if it should show the network and location dialog,
+     * Based on the current state it asks the presenter if it should
+     * show the network and location dialog,
      * then the presenter tells the view to update the button text and the status.
      * Finally it ask the presenter if it should load the path between the 2 markers.
      * @param view
      */
     public void doLocationX(View view) {
-        if (park == 0 || park == 1) {
+        if (mPark == 0 || mPark == 1) {
             boolean netEnabled      = isNetworkAvailable();
             boolean locationEnabled = isLocationEnabled();
             Location location       = getLocation();
             mMainPresenter.parkCar(netEnabled, locationEnabled, location);
-        } else if (park == 2) {
+        } else if (mPark == 2) {
             mMainPresenter.getMvpView().changeParkFlag();
             mMainPresenter.getMvpView().changeBtnText();
         }
-        if (markerPoints.size() >= 2) {
-            if (activityMode == APP_MODE.APPLICATION_MODE) {
-                StringBuilder originC = new StringBuilder(valueOf(markerPoints.get(0).latitude)).
-                        append(",").append(valueOf(markerPoints.get(0).longitude));
-                StringBuilder destC = new StringBuilder(valueOf(markerPoints.get(1).latitude)).
-                        append(",").append(valueOf(markerPoints.get(1).longitude));
+        if (mMarkerPoints.size() >= 2) {
+            if (activityMode == AppMode.APPLICATION_MODE) {
+                StringBuilder originC = new StringBuilder(valueOf(mMarkerPoints.get(0).latitude)).
+                        append(",").append(valueOf(mMarkerPoints.get(0).longitude));
+                StringBuilder destC = new StringBuilder(valueOf(mMarkerPoints.get(1).latitude)).
+                        append(",").append(valueOf(mMarkerPoints.get(1).longitude));
                 mMainPresenter.loadPath("walking", originC.toString(), destC.toString(), false);
             } else {
                 StringBuilder origin      = new StringBuilder("37.368695,-122.038270");
                 StringBuilder destination = new StringBuilder("37.369082,-122.038246");
-                mMainPresenter.loadPath("walking", origin.toString(), destination.toString(), false);
+                mMainPresenter.loadPath("walking",
+                        origin.toString(), destination.toString(), false);
             }
         }
     }
@@ -409,12 +421,12 @@ public class MainActivity extends BaseActivity implements
      */
     @Override
     public void changeParkFlag() {
-        if (park == 0) {
-            park = 1;
-        } else if (park == 1) {
-            park = 2;
-        } else if (park == 2) {
-            park = 0;
+        if (mPark == 0) {
+            mPark = 1;
+        } else if (mPark == 1) {
+            mPark = 2;
+        } else if (mPark == 2) {
+            mPark = 0;
         }
     }
 
@@ -424,7 +436,7 @@ public class MainActivity extends BaseActivity implements
      */
     @Override
     public void paintPath(Result result) {
-        List<List<HashMap<String, String>>> routes = new ArrayList<List<HashMap<String,String>>>() ;
+        List<List<HashMap<String, String>>> routes = new ArrayList<List<HashMap<String, String>>>();
 
         /** Traversing all routes */
         for (Route r : result.getRoutes()) {
@@ -442,8 +454,10 @@ public class MainActivity extends BaseActivity implements
                         /** Traversing all points */
                         for (int i = 0; i < list.size(); i++) {
                             HashMap<String, String> hm = new HashMap<String, String>();
-                            hm.put("lat", Double.toString(((LatLng)list.get(i)).latitude));
-                            hm.put("lng", Double.toString(((LatLng)list.get(i)).longitude));
+                            hm.put("lat",
+                                    Double.toString(((LatLng) list.get(i)).latitude));
+                            hm.put("lng",
+                                    Double.toString(((LatLng) list.get(i)).longitude));
                             path.add(hm);
                         }
                     }
@@ -465,17 +479,17 @@ public class MainActivity extends BaseActivity implements
 
             // Fetching all the points in i-th route
             for (int j = 0; j < path.size(); j++) {
-                HashMap<String,String> point = path.get(j);
+                HashMap<String, String> point = path.get(j);
 
                 double lat = Double.parseDouble(point.get("lat"));
                 double lng = Double.parseDouble(point.get("lng"));
                 if (j == 0) {
-                    lat = markerPoints.get(0).latitude;
-                    lng = markerPoints.get(0).longitude;
+                    lat = mMarkerPoints.get(0).latitude;
+                    lng = mMarkerPoints.get(0).longitude;
                 }
                 if (j == (path.size() - 1)) {
-                    lat = markerPoints.get(1).latitude;
-                    lng = markerPoints.get(1).longitude;
+                    lat = mMarkerPoints.get(1).latitude;
+                    lng = mMarkerPoints.get(1).longitude;
                 }
                 LatLng position = new LatLng(lat, lng);
                 points.add(position);
@@ -486,7 +500,7 @@ public class MainActivity extends BaseActivity implements
             lineOptions.color(Color.RED);
         }
         // Drawing polyline in the Google Map for the i-th route
-        googleMap.addPolyline(lineOptions);
+        mGoogleMap.addPolyline(lineOptions);
     }
 
     /**
@@ -494,18 +508,18 @@ public class MainActivity extends BaseActivity implements
      */
     @Override
     public void changeBtnText() {
-        if (markerPoints == null) {
-            markerPoints = new ArrayList<LatLng>();
+        if (mMarkerPoints == null) {
+            mMarkerPoints = new ArrayList<LatLng>();
         }
-        if (park == 0) {
-            markerPoints.clear();
-            if (googleMap != null) {
-                googleMap.clear();
+        if (mPark == 0) {
+            mMarkerPoints.clear();
+            if (mGoogleMap != null) {
+                mGoogleMap.clear();
             }
             locationBtn.setText(R.string.text_park);
-        } else if (park == 1) {
+        } else if (mPark == 1) {
             locationBtn.setText(R.string.text_find_my_car);
-        } else if (park == 2) {
+        } else if (mPark == 2) {
             locationBtn.setText(R.string.text_start_over);
         }
     }
@@ -515,7 +529,7 @@ public class MainActivity extends BaseActivity implements
      */
     @Override
     public void moveCameraToSavedPosition() {
-        googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(mCameraPosition));
+        mGoogleMap.moveCamera(CameraUpdateFactory.newCameraPosition(mCameraPosition));
     }
 
     /**
@@ -523,7 +537,7 @@ public class MainActivity extends BaseActivity implements
      */
     @Override
     public void moveCameraToCurrentLocation() {
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+        mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
                 new LatLng(mCurrentLocation.getLatitude(),
                         mCurrentLocation.getLongitude()), DEFAULT_ZOOM));
     }
@@ -533,7 +547,7 @@ public class MainActivity extends BaseActivity implements
      */
     @Override
     public void moveCameraToDefault() {
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mDefaultLocation, DEFAULT_ZOOM));
+        mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mDefaultLocation, DEFAULT_ZOOM));
     }
 
     /**
@@ -542,19 +556,19 @@ public class MainActivity extends BaseActivity implements
      * */
     @Override
     public boolean isLocationEnabled() {
-        if (activityMode == APP_MODE.APPLICATION_MODE) {
+        if (activityMode == AppMode.APPLICATION_MODE) {
             // getting GPS status
-            isGPSEnabled = locationManager
+            mIsGPSEnabled = mLocationManager
                     .isProviderEnabled(LocationManager.GPS_PROVIDER);
             // getting network status
             ConnectivityManager connectivityManager
                     = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
             NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
-            isNetworkEnabled = (activeNetworkInfo != null && activeNetworkInfo.isConnected());
+            mIsNetworkEnabled = (activeNetworkInfo != null && activeNetworkInfo.isConnected());
         } else {
-            isGPSEnabled = isMockLocationEnabled;
+            mIsGPSEnabled = isMockLocationEnabled;
         }
-        return isGPSEnabled;
+        return mIsGPSEnabled;
     }
 
     /**
@@ -563,15 +577,15 @@ public class MainActivity extends BaseActivity implements
      */
     @Override
     public boolean isNetworkAvailable() {
-        if (activityMode == APP_MODE.APPLICATION_MODE) {
+        if (activityMode == AppMode.APPLICATION_MODE) {
             ConnectivityManager connectivityManager
                     = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
             NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
-            isNetworkEnabled = (activeNetworkInfo != null && activeNetworkInfo.isConnected());
+            mIsNetworkEnabled = (activeNetworkInfo != null && activeNetworkInfo.isConnected());
         } else {
-            isNetworkEnabled = isMockNetworkEnabled;
+            mIsNetworkEnabled = isMockNetworkEnabled;
         }
-        return isNetworkEnabled;
+        return mIsNetworkEnabled;
     }
 
 }

@@ -27,12 +27,12 @@ public class BaseActivity extends AppCompatActivity {
     private static final AtomicLong NEXT_ID = new AtomicLong(0);
     private static final Map<Long, ConfigPersistentComponent> sComponentsMap = new HashMap<>();
 
-    public enum APP_MODE {
+    public enum AppMode {
         APPLICATION_MODE,
         UNIT_TEST_MODE
     }
 
-    public static APP_MODE activityMode = APP_MODE.APPLICATION_MODE;
+    public static AppMode activityMode = AppMode.APPLICATION_MODE;
     public static LatLng mockOriginCoordinates;
     public static LatLng mockDestinyCoordinates;
     public static boolean isMockLocationEnabled;
@@ -49,8 +49,8 @@ public class BaseActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (activityMode == APP_MODE.UNIT_TEST_MODE) {
-            mockOriginCoordinates  = new LatLng(37.368695,-122.038270);
+        if (activityMode == AppMode.UNIT_TEST_MODE) {
+            mockOriginCoordinates  = new LatLng(37.368695, -122.038270);
             mockDestinyCoordinates = new LatLng(37.369082, -122.038246);
         }
 

@@ -74,7 +74,8 @@ public class MainPresenter extends BasePresenter<MainMvpView> {
 
                     @Override
                     public void onNext(Result result) {
-                        if (result != null && !result.getRoutes().isEmpty() && !result.getRoutes().get(0).getLegs().isEmpty() &&
+                        if (result != null && !result.getRoutes().isEmpty() &&
+                                !result.getRoutes().get(0).getLegs().isEmpty() &&
                                 !result.getRoutes().get(0).getLegs().get(0).getSteps().isEmpty()) {
                             // pass routes to view
                             getMvpView().paintPath(result);
