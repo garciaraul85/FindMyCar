@@ -203,13 +203,7 @@ public class MainActivity extends BaseActivity implements
         try {
             this.mGoogleMap.
                     setOnMyLocationChangeListener(
-                            new GoogleMap.
-                                    OnMyLocationChangeListener() {
-                    @Override
-                    public void onMyLocationChange(Location location) {
-                        mCurrentLocation = location;
-                    }
-                });
+                            location -> mCurrentLocation = location);
         } catch (Exception e) {
             Log.e(TAG, getString(R.string.exception_on_map_ready), e);
         }

@@ -29,13 +29,12 @@
         <activity
             android:name=".ui.main.MainActivity"
             android:label="@string/app_name">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+            <!--<intent-filter>-->
+                <!--<action android:name="android.intent.action.MAIN" />-->
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+                <!--<category android:name="android.intent.category.LAUNCHER" />-->
+            <!--</intent-filter>-->
         </activity>
-
         <activity android:name=".ui.settings.SettingsActivity" />
 
         <service android:name=".data.SyncService" />
@@ -57,6 +56,14 @@
         <meta-data
             android:name="io.fabric.ApiKey"
             android:value="2bbe80a262c0a9f44fe1f41852a304fff5315e96" />
+
+        <activity android:name=".ui.mainmvvm.MainActivityMVVM">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>
